@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Félicitations !</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffffff;
+        }
+        .container {
+            text-align: left;
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .title-row {
+            display: flex;
+            align-items: center;
+            font-size: 4.5rem;
+            font-weight: bold;
+            color: #212529;
+            margin-bottom: 10px;
+        }
+        .emoji {
+            font-size: 3.5rem;
+            margin-left: 15px;
+        }
+        .emoji-row {
+            font-size: 3.5rem;
+            margin-bottom: 30px;
+        }
+        .emoji-row span {
+            margin-right: 10px;
+        }
+        .name {
+            font-size: 3.8rem;
+            font-weight: bold;
+            color: #2b70b4; /* Bleu de votre capture */
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 1.5rem;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="title-row">
+            Félicitations <span class="emoji">🎉</span>
+        </div>
+        
+        <div class="emoji-row">
+            <span>🎉</span><span>🎉</span>
+        </div>
+        
+        <div class="name" id="candidate-name">
+            Chargement...
+        </div>
+    </div>
+
+    <script>
+        // URL de votre API locale Python Flask
+        const API_URL = "http://127.0.0.1:5000/api/candidat";
+
+        // Fonction pour récupérer le paramètre "id" dans l'adresse URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        async function fetchCandidate() {
+            const candidateId = getQueryParam('id');
+            const nameElement = document.getElementById('candidate-name');
+
+            // Si aucun ID n'est fourni dans l'URL
+            if (!candidateId) {
+                nameElement.innerHTML = "<span class='error-message'>ID d'attestation manquant.</span>";
+                return;
+            }
+
+            try {
+                // Appel à l'API locale pour récupérer le nom associé à l'ID
+                const response = await fetch(`${API_URL}/${candidateId}`);
+                
+                if (!response.ok) {
+                    nameElement.innerHTML = "<span class='error-message'>Attestation invalide ou introuvable.</span>";
+                    return;
+                }
+
+                const data = await response.json();
+                
+                // On affiche le nom trouvé en base de données
+                nameElement.innerText = data.nom_complet;
+
+            } catch (err) {
+                // En cas de problème de connexion avec le serveur Python (app.py éteint par exemple)
+                nameElement.innerHTML = "<span class='error-message'>Erreur de connexion à l'API locale.</span>";
+                console.error(err);
+            }
+        }
+
+        // Lancement de la récupération dès le chargement de la page
+        fetchCandidate();
+    </script>
+</body>
+</html>
